@@ -23,7 +23,7 @@ public class MainMenu : MonoBehaviour
         
     }
 
-    public void OnPlayButton()
+    public void OnVideoCarousel()
     {
         SceneManager.LoadScene("VideoCarousel");
     }
@@ -32,5 +32,9 @@ public class MainMenu : MonoBehaviour
     {
         Application.Quit();
     }
-
+    
+    public void OnIdleLogoButton()
+    {
+        SceneManager.LoadScene("IdleLogo");
+    }
 }

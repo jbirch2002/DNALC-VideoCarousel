@@ -9,9 +9,12 @@ EditorBuildSettings:
     path: Assets/Scenes/TestScene.unity
     guid: e4a9d2915fb9df74891a05905c3986e1
   - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: c2c99b6095d950a468e1d7d1a76faf2d
+  - enabled: 1
     path: Assets/Scenes/VideoCarousel.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
-    path: Assets/Scenes/MainMenu.unity
-    guid: c2c99b6095d950a468e1d7d1a76faf2d
+    path: Assets/Scenes/IdleLogo.unity
+    guid: 9807cd46aa483674aa05c10041745e2e
   m_configObjects: {}

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.Video;
+using UnityEngine.SceneManagement;
 
 public class VideoCarousel : MonoBehaviour
 {
@@ -40,6 +41,9 @@ public class VideoCarousel : MonoBehaviour
 
     [Tooltip("Click to move to the previous page.")]
     public Button prevButton;
+
+    [Tooltip("Click to move to the main menu.")]
+    public Button returnToMenu;
 
     [Header("Carousel Mode")]
     [Tooltip("Enables automatic cycling through pages.")]
@@ -366,6 +370,11 @@ public class VideoCarousel : MonoBehaviour
                 dotImage.color = Color.Lerp(dotImage.color, targetColor, Time.deltaTime * dotColorTransitionSpeed);
             }
         }
+    }
+
+    public void OnMainMenuButtonClick()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
 
     private void UpdateVideoPlayback()
