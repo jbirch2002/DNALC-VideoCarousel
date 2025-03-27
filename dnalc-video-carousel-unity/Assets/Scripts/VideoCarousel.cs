@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 public class VideoCarousel : MonoBehaviour
 {
+    private List<VideoPlayer> videoPlayers = new List<VideoPlayer>();
+
     [Header("Important Information")]
     [Tooltip("Ensure that a GridLayoutGroup is assigned to CONTENT. The correct layout group is crucial for the proper functioning of the carousel.")]
     [TextArea(3, 5)]
@@ -47,6 +50,8 @@ public class VideoCarousel : MonoBehaviour
 
     [Tooltip("Adjusts the time interval between automatic page transitions (in seconds).")]
     public float autoMoveTimer = 5f;
+
+
 
     [Header("Navigation Dots")]
     [Tooltip("Prefab for navigation dots.")]
@@ -125,6 +130,24 @@ public class VideoCarousel : MonoBehaviour
             return;
         }
 
+        foreach (Transform child in gridLayoutGroup.transform)
+        {
+            VideoPlayer vp = child.GetComponentInChildren<VideoPlayer>();
+            RawImage ri = child.GetComponentInChildren<RawImage>();
+
+            if (vp != null && ri != null)
+            {
+                // Create a unique RenderTexture for each video
+                RenderTexture rt = new RenderTexture(1920, 1080, 0);
+                vp.targetTexture = rt;
+                ri.texture = rt;
+
+                vp.Pause(); // Pause all initially
+                videoPlayers.Add(vp);
+            }
+        }
+
+
         if (dotPrefab == null) return;
 
         if(dotsContainer == null) return;
@@ -150,6 +173,9 @@ public class VideoCarousel : MonoBehaviour
         {
             prevButton.onClick.AddListener(MoveToPreviousPage);
         }
+
+
+        UpdateVideoPlayback();
     }
 
     private void InitializeNavigationDots()
@@ -292,11 +318,13 @@ public class VideoCarousel : MonoBehaviour
         {
             int prevPage = (currentIndex - 1 + totalPages) % totalPages;
             SetSnapTarget(prevPage);
+            UpdateVideoPlayback();
         }
         else
         {
             int prevPage = Mathf.Clamp(currentIndex - 1, 0, totalPages - 1);
             SetSnapTarget(prevPage);
+            UpdateVideoPlayback();
         }
     }
 
@@ -306,11 +334,13 @@ public class VideoCarousel : MonoBehaviour
         {
             int nextPage = (currentIndex + 1) % totalPages;
             SetSnapTarget(nextPage);
+            UpdateVideoPlayback();
         }
         else
         {
             int nextPage = Mathf.Clamp(currentIndex + 1, 0, totalPages - 1);
             SetSnapTarget(nextPage);
+            UpdateVideoPlayback();
         }
     }
 
@@ -337,4 +367,63 @@ public class VideoCarousel : MonoBehaviour
             }
         }
     }
+
+    private void UpdateVideoPlayback()
+    {
+        // Stop all videos and hide their RawImages
+        foreach (var vp in videoPlayers)
+        {
+            vp.Stop();
+
+            RawImage ri = vp.GetComponent<RawImage>();
+            if (ri != null)
+            {
+                ri.enabled = false;
+            }
+        }
+
+        int itemIndex = currentIndex * gridLayoutGroup.constraintCount;
+
+        for (int i = itemIndex; i < itemIndex + gridLayoutGroup.constraintCount; i++)
+        {
+            if (i >= videoPlayers.Count) break;
+
+            VideoPlayer vp = videoPlayers[i];
+            RawImage ri = vp.GetComponent<RawImage>();
+
+            if (vp.targetTexture == null)
+            {
+                // Safeguard: create new RT if not already created
+                RenderTexture rt = new RenderTexture(1280, 720, 0);
+                vp.targetTexture = rt;
+                if (ri != null) ri.texture = rt;
+            }
+
+            if (ri != null)
+            {
+                ri.enabled = false; // Hide until prepared
+            }
+
+            vp.Stop();  // Reset
+            vp.Prepare();
+
+            // We must capture correct ri in closure
+            RawImage capturedRI = ri;
+
+            vp.prepareCompleted += (VideoPlayer source) =>
+            {
+                source.Play();
+
+                // Force update the RawImage texture
+                if (capturedRI != null)
+                {
+                    capturedRI.texture = source.texture;
+                    capturedRI.enabled = true;
+                }
+            };
+        }
+    }
+
+
+
 }
