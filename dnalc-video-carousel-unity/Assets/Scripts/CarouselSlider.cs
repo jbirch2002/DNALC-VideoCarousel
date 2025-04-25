@@ -9,10 +9,6 @@ public class CarouselSlider : MonoBehaviour
     public RawImage contentDisplay;
     public List<GameObject> contentPanels;
 
-    [Header("Navigation Dots")]
-    public GameObject dotsContainer;
-    public GameObject dotPrefab;
-
     [Header("Pagination Buttons")]
     public Button nextButton;
     public Button prevButton;
@@ -34,8 +30,6 @@ public class CarouselSlider : MonoBehaviour
         nextButton.onClick.AddListener(NextContent);
         prevButton.onClick.AddListener(PreviousContent);
 
-        // Initialize dots
-        InitializeDots();
 
         // Display initial content
         ShowContent();
@@ -45,32 +39,6 @@ public class CarouselSlider : MonoBehaviour
         {
             timer = autoMoveTime;
             InvokeRepeating("AutoMoveContent", 1f, 1f); // Invoke every second to update the timer
-        }
-    }
-
-    void InitializeDots()
-    {
-        // Create dots based on the number of content panels
-        for (int i = 0; i < contentPanels.Count; i++)
-        {
-            GameObject dot = Instantiate(dotPrefab, dotsContainer.transform);
-            Image dotImage = dot.GetComponent<Image>();
-            dotImage.color = (i == currentIndex) ? Color.white : Color.gray;
-            dotImage.fillAmount = 0f; // Initial fill amount
-            // You may want to customize the dot appearance and layout here
-        }
-    }
-
-    void UpdateDots()
-    {
-        // Update the appearance of dots based on the current index
-        for (int i = 0; i < dotsContainer.transform.childCount; i++)
-        {
-            RawImage dotImage = dotsContainer.transform.GetChild(i).GetComponent<RawImage>();
-            dotImage.color = (i == currentIndex) ? Color.white : Color.gray;
-
-            float targetFillAmount = timer / autoMoveTime;
-            StartCoroutine(SmoothFill(dotImage, targetFillAmount, 0.5f));
         }
     }
 
@@ -145,21 +113,18 @@ public class CarouselSlider : MonoBehaviour
             NextContent();
         }
 
-        UpdateDots(); // Update dots on every timer tick
     }
 
     void NextContent()
     {
         currentIndex = (currentIndex + 1) % contentPanels.Count;
         ShowContent();
-        UpdateDots();
     }
 
     void PreviousContent()
     {
         currentIndex = (currentIndex - 1 + contentPanels.Count) % contentPanels.Count;
         ShowContent();
-        UpdateDots();
     }
 
     void ShowContent()
@@ -170,20 +135,13 @@ public class CarouselSlider : MonoBehaviour
             bool isActive = i == currentIndex;
             contentPanels[i].SetActive(isActive);
 
-            // Update dot visibility and color based on the current active content
-            Image dotImage = dotsContainer.transform.GetChild(i).GetComponent<Image>();
-            dotImage.color = isActive ? Color.white : Color.gray;
-
             if (isActive)
             {
                 // Reset timer and fill amount when the content is swiped
                 timer = autoMoveTime;
-                dotImage.fillAmount = 1f;
             }
             else
             {
-                // Set the fill amount to 0 for non-active content
-                dotImage.fillAmount = 0f;
             }
         }
     }
@@ -194,7 +152,6 @@ public class CarouselSlider : MonoBehaviour
         {
             currentIndex = newIndex;
             ShowContent();
-            UpdateDots();
         }
     }
 }
