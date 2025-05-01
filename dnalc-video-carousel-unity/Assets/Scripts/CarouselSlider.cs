@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class CarouselSlider : MonoBehaviour
 {
-    [Header("Content Vieport")]
+    [Header("Content Viewport")]
     public RawImage contentDisplay;
     public List<GameObject> contentPanels;
 
@@ -22,6 +22,11 @@ public class CarouselSlider : MonoBehaviour
     public float swipeThreshold = 50f;
     private Vector2 touchStartPos;
 
+    public Animator rightArrow;
+    public Animator leftArrow;
+
+    private int lastIndex = 0;
+
     // Reference to the RectTransform of the content area
     public RectTransform contentArea;
 
@@ -29,7 +34,6 @@ public class CarouselSlider : MonoBehaviour
     {
         nextButton.onClick.AddListener(NextContent);
         prevButton.onClick.AddListener(PreviousContent);
-
 
         // Display initial content
         ShowContent();
@@ -42,7 +46,7 @@ public class CarouselSlider : MonoBehaviour
         }
     }
 
-    IEnumerator SmoothFill (RawImage image, float targetFillAmount, float duration)
+    IEnumerator SmoothFill(RawImage image, float targetFillAmount, float duration)
     {
         float startFillAmount = image.uvRect.width;
         float elapsedTime = 0f;
@@ -69,6 +73,7 @@ public class CarouselSlider : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             touchStartPos = Input.mousePosition;
+            HideArrows(); // Hide arrows immediately when the user starts dragging
         }
 
         if (Input.GetMouseButtonUp(0))
@@ -112,7 +117,6 @@ public class CarouselSlider : MonoBehaviour
             timer = autoMoveTime;
             NextContent();
         }
-
     }
 
     void NextContent()
@@ -129,7 +133,30 @@ public class CarouselSlider : MonoBehaviour
 
     void ShowContent()
     {
-        // Activate the current panel and deactivate others
+        // Ensure arrows are visible and active before playing their animations
+        if (rightArrow != null && !rightArrow.gameObject.activeSelf)
+        {
+            StartCoroutine(ShowArrowsAfterDelay(3f));
+        }
+
+        if (leftArrow != null && !leftArrow.gameObject.activeSelf)
+        {
+            StartCoroutine(ShowArrowsAfterDelay(3f));
+        }
+
+        // Play arrow animation based on direction
+        if (currentIndex > lastIndex && rightArrow != null)
+        {
+            rightArrow.Play("ArrowRight", 0, 0f); // "ArrowRight" = your actual animation state name
+        }
+        else if (currentIndex < lastIndex && leftArrow != null)
+        {
+            leftArrow.Play("ArrowRight", 0, 0f); // Ensure this is the correct animation for left arrow
+        }
+
+        lastIndex = currentIndex;
+        
+
         for (int i = 0; i < contentPanels.Count; i++)
         {
             bool isActive = i == currentIndex;
@@ -137,12 +164,40 @@ public class CarouselSlider : MonoBehaviour
 
             if (isActive)
             {
-                // Reset timer and fill amount when the content is swiped
                 timer = autoMoveTime;
             }
-            else
-            {
-            }
+        }
+    }
+
+    void HideArrows()
+    {
+        // Hide arrows immediately when the user drags
+        if (rightArrow != null)
+        {
+            rightArrow.gameObject.SetActive(false);
+        }
+
+        if (leftArrow != null)
+        {
+            leftArrow.gameObject.SetActive(false);
+        }
+    }
+
+    // Coroutine to show the arrows after a specified delay
+    IEnumerator ShowArrowsAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (rightArrow != null && !rightArrow.gameObject.activeSelf)
+        {
+            rightArrow.gameObject.SetActive(true); // Reactivate right arrow
+            rightArrow.Play("ArrowRight", 0, 0f); // Play right arrow animation
+        }
+
+        if (leftArrow != null && !leftArrow.gameObject.activeSelf)
+        {
+            leftArrow.gameObject.SetActive(true); // Reactivate left arrow
+            leftArrow.Play("ArrowRight", 0, 0f); // Play left arrow animation
         }
     }
 
